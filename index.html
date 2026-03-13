@@ -48,7 +48,7 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-03-13 23:05 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-03-13 23:07 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div style="max-width:1400px;margin:0 auto 24px;padding:0 16px">
@@ -507,11 +507,11 @@ let tableSortDir = -1;  // -1 = desc (newest first)
 
 function renderTable(records) {
   const cols = [
+    ['Status',        3, ''],
     ['Visa Type',     1, ''],
     ['Entry',         6, ''],
     ['Consulate',     5, ''],
     ['Major',         7, ''],
-    ['Status',        3, ''],
     ['Check Date',    4, ''],
     ['Complete Date', 0, ''],
     ['Waiting Days',  2, 'col-days'],
