@@ -154,9 +154,10 @@ def build_data(records):
         }
     }
 
-    # Compact raw records for client-side filtering: [date, visa, days, status, check_date, consulate]
+    # Compact raw records: [date, visa, days, status, check_date, consulate, entry, major, details]
     raw_records = [
-        [r["date"], r["visa"], r["days"], r["status"], r["check_date"], r["consulate"]]
+        [r["date"], r["visa"], r["days"], r["status"], r["check_date"],
+         r["consulate"], r["entry"], r["major"], r["details"]]
         for r in records
     ]
 
