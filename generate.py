@@ -207,8 +207,8 @@ def generate_html(data, updated):
 #recordsTable thead th {{
   position: sticky; top: 0;
   background: #f0f0f0; border-bottom: 2px solid #ddd;
-  padding: 6px 8px; text-align: left; white-space: nowrap;
-  cursor: pointer; user-select: none; overflow: hidden; text-overflow: ellipsis;
+  padding: 6px 8px; text-align: left; white-space: normal;
+  cursor: pointer; user-select: none;
 }}
 #recordsTable thead th:hover {{ background: #e4e4e4; }}
 #recordsTable tbody tr:nth-child(even) {{ background: #f9f9f9; }}
@@ -689,10 +689,10 @@ function renderTable(records) {{
   const cols = [
     ['Status',        3, '',           '62px'],
     ['Check Date',    4, '',           '92px'],
-    ['Complete Date', 0, '',           '105px'],
-    ['Waiting Days',  2, 'col-days',   '56px'],
+    ['Complete Date', 0, '',           '110px'],
+    ['Waiting Days',  2, 'col-days',   '76px'],
     ['Visa Type',     1, '',           '72px'],
-    ['Entry',         6, '',           '52px'],
+    ['Entry',         6, '',           '65px'],
     ['Consulate',     5, '',           '90px'],
     ['Major',         7, '',           '140px'],
     ['Details',       8, 'col-details',''],
