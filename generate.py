@@ -434,7 +434,8 @@ chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {{
 // ── Card 7: check date distribution ──────────────────────────────────────────
 const cdCard = document.createElement('div');
 cdCard.className = 'card';
-cdCard.innerHTML = '<h3>Check Date Distribution (by Status)</h3><canvas id="cCD"></canvas>';
+cdCard.innerHTML = '<h3>Check Date Distribution (by Status)</h3><canvas id="cCD"></canvas>' +
+  '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = status &nbsp;·&nbsp; curve = normal dist. fit</span></div>';
 grid.appendChild(cdCard);
 
 const cd = DATA.check_dist;
@@ -465,6 +466,7 @@ function cdNormalLine(dates, counts, statuses) {{
     backgroundColor: 'transparent',
     borderWidth: 1.5,
     pointRadius: 0,
+    pointStyle: 'line',
     tension: 0,
     fill: false,
     order: 0,
@@ -488,7 +490,7 @@ chartInstances['cCD'] = new Chart(document.getElementById('cCD'), {{
   options: {{
     responsive: true,
     plugins: {{
-      legend: {{ position: 'top', labels: {{ font: {{ size: 11 }}, padding: 6 }} }},
+      legend: {{ position: 'top', labels: {{ font: {{ size: 11 }}, padding: 6, usePointStyle: true }} }},
       tooltip: {{ mode: 'index', intersect: false }}
     }},
     scales: {{
