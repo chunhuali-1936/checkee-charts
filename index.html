@@ -48,7 +48,7 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-03-13 23:00 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-03-13 23:03 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div style="max-width:1400px;margin:0 auto 24px;padding:0 16px">
@@ -522,6 +522,10 @@ function renderTable(records) {
   const thead = document.querySelector('#recordsTable thead');
   if (!thead.children.length) {
     const tr = document.createElement('tr');
+    const thNum = document.createElement('th');
+    thNum.textContent = '#';
+    thNum.style.cssText = 'width:36px;text-align:right;color:#aaa';
+    tr.appendChild(thNum);
     cols.forEach(([label, , cls], ci) => {
       const th = document.createElement('th');
       th.textContent = label;
@@ -554,8 +558,12 @@ function renderTable(records) {
   // Render tbody
   const tbody = document.querySelector('#recordsTable tbody');
   tbody.innerHTML = '';
-  sorted.forEach(r => {
+  sorted.forEach((r, i) => {
     const tr = document.createElement('tr');
+    const tdNum = document.createElement('td');
+    tdNum.textContent = i + 1;
+    tdNum.style.cssText = 'text-align:right;color:#aaa;user-select:none';
+    tr.appendChild(tdNum);
     cols.forEach(([, ri, cls]) => {
       const td = document.createElement('td');
       if (cls) td.className = cls;

@@ -700,6 +700,10 @@ function renderTable(records) {{
   const thead = document.querySelector('#recordsTable thead');
   if (!thead.children.length) {{
     const tr = document.createElement('tr');
+    const thNum = document.createElement('th');
+    thNum.textContent = '#';
+    thNum.style.cssText = 'width:36px;text-align:right;color:#aaa';
+    tr.appendChild(thNum);
     cols.forEach(([label, , cls], ci) => {{
       const th = document.createElement('th');
       th.textContent = label;
@@ -732,8 +736,12 @@ function renderTable(records) {{
   // Render tbody
   const tbody = document.querySelector('#recordsTable tbody');
   tbody.innerHTML = '';
-  sorted.forEach(r => {{
+  sorted.forEach((r, i) => {{
     const tr = document.createElement('tr');
+    const tdNum = document.createElement('td');
+    tdNum.textContent = i + 1;
+    tdNum.style.cssText = 'text-align:right;color:#aaa;user-select:none';
+    tr.appendChild(tdNum);
     cols.forEach(([, ri, cls]) => {{
       const td = document.createElement('td');
       if (cls) td.className = cls;
