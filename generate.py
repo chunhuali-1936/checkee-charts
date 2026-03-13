@@ -39,6 +39,7 @@ def scrape():
         cells = row.find_all("td")
         if len(cells) == 11:
             visa       = cells[2].get_text(strip=True)
+            entry      = cells[3].get_text(strip=True)
             status     = cells[6].get_text(strip=True)
             check_date = cells[7].get_text(strip=True)
             date       = cells[8].get_text(strip=True)
@@ -53,6 +54,7 @@ def scrape():
                     "days": days,
                     "status": status,
                     "check_date": check_date,
+                    "entry": entry,
                 })
     return records
 
@@ -64,6 +66,7 @@ def build_data(records):
     raw_days = defaultdict(list)
     day_days = defaultdict(list)
     check_status_counts = defaultdict(lambda: defaultdict(int))  # check_date -> status -> count
+    entry_counts = defaultdict(int)
 
     for r in records:
         counts[r["visa"]][r["date"]] += 1
@@ -73,6 +76,8 @@ def build_data(records):
         cd = r["check_date"]
         if re.match(r"^\d{4}-\d{2}-\d{2}$", cd):
             check_status_counts[cd][r["status"]] += 1
+        if r["entry"]:
+            entry_counts[r["entry"]] += 1
 
     groups_visas = [["B1", "B2"], ["F1", "F2"], ["H1", "H4"], ["J1", "J2"], ["L1", "L2"], ["O1"]]
     stats = {}
@@ -117,6 +122,7 @@ def build_data(records):
         "stats": stats,
         "daily_stats": daily_stats,
         "check_dist": check_dist,
+        "entry_dist": dict(entry_counts),
     }
 
 
@@ -268,7 +274,45 @@ new Chart(document.getElementById('cWait'), {{
   }}
 }});
 
-// Card 8: check date distribution by status
+// Card 8: visa entry pie chart (New vs Renewal)
+const entryCard = document.createElement('div');
+entryCard.className = 'card';
+entryCard.innerHTML = '<h3>Visa Entry Type</h3><canvas id="cEntry"></canvas>';
+grid.appendChild(entryCard);
+
+const entryDist = DATA.entry_dist || {{}};
+const entryLabels = Object.keys(entryDist);
+const entryValues = entryLabels.map(k => entryDist[k]);
+const entryColors = ['#2196F3','#FF9800','#4CAF50','#9C27B0','#F44336','#607D8B'];
+new Chart(document.getElementById('cEntry'), {{
+  type: 'pie',
+  data: {{
+    labels: entryLabels,
+    datasets: [{{
+      data: entryValues,
+      backgroundColor: entryColors.slice(0, entryLabels.length),
+      borderWidth: 1,
+      borderColor: '#fff',
+    }}]
+  }},
+  options: {{
+    responsive: true,
+    plugins: {{
+      legend: {{ position: 'bottom', labels: {{ font: {{ size: 11 }}, padding: 10 }} }},
+      tooltip: {{
+        callbacks: {{
+          label: (ctx) => {{
+            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+            const pct = ((ctx.parsed / total) * 100).toFixed(1);
+            return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+          }}
+        }}
+      }}
+    }}
+  }}
+}});
+
+// Card 9: check date distribution by status
 const statusColors = {{}};
 const palette = ['#4CAF50','#F44336','#2196F3','#FF9800','#9C27B0','#607D8B','#795548','#00BCD4'];
 (DATA.check_dist.statuses || []).forEach((s, i) => {{
