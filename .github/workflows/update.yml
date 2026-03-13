@@ -2,7 +2,7 @@ name: Update Charts
 
 on:
   schedule:
-    - cron: '0 16 * * *'  # Daily at 9am SF time (PDT, UTC-7)
+    - cron: '0 */2 * * *'  # Every 2 hours
   workflow_dispatch:       # Allow manual trigger from GitHub UI
 
 permissions:
