@@ -375,6 +375,8 @@ function updateAllCharts(records) {{
     ];
     cdc.update();
   }}
+  _currentTableRecords = records;
+  renderTable(records);
 }}
 
 // ── Cards 0-5: visa group bar charts ─────────────────────────────────────────
@@ -668,6 +670,78 @@ filterPill.addEventListener('click', () => {{
   chartInstances['cEntry'].update();
   updateAllCharts(DATA.raw_records);
 }});
+
+// ── Records table ─────────────────────────────────────────────────────────
+let tableSortCol = 0;   // default: complete date (col index 0 in cols array)
+let tableSortDir = -1;  // -1 = desc (newest first)
+
+function renderTable(records) {{
+  const cols = [
+    ['Visa Type',     1, ''],
+    ['Entry',         6, ''],
+    ['Consulate',     5, ''],
+    ['Major',         7, ''],
+    ['Status',        3, ''],
+    ['Check Date',    4, ''],
+    ['Complete Date', 0, ''],
+    ['Waiting Days',  2, 'col-days'],
+    ['Details',       8, 'col-details'],
+  ];
+
+  // Build header once
+  const thead = document.querySelector('#recordsTable thead');
+  if (!thead.children.length) {{
+    const tr = document.createElement('tr');
+    cols.forEach(([label, , cls], ci) => {{
+      const th = document.createElement('th');
+      th.textContent = label;
+      if (cls) th.className = cls;
+      th.dataset.ci = ci;
+      th.addEventListener('click', () => {{
+        if (tableSortCol === ci) {{ tableSortDir *= -1; }}
+        else {{ tableSortCol = ci; tableSortDir = 1; }}
+        renderTable(_currentTableRecords);
+      }});
+      tr.appendChild(th);
+    }});
+    thead.appendChild(tr);
+  }}
+
+  // Sort indicators
+  thead.querySelectorAll('th').forEach((th, ci) => {{
+    th.classList.remove('table-sort-asc', 'table-sort-desc');
+    if (ci === tableSortCol)
+      th.classList.add(tableSortDir === 1 ? 'table-sort-asc' : 'table-sort-desc');
+  }});
+
+  // Sort records
+  const [, idx] = cols[tableSortCol];
+  const sorted = [...records].sort((a, b) => {{
+    const av = a[idx], bv = b[idx];
+    return tableSortDir * (av < bv ? -1 : av > bv ? 1 : 0);
+  }});
+
+  // Render tbody
+  const tbody = document.querySelector('#recordsTable tbody');
+  tbody.innerHTML = '';
+  sorted.forEach(r => {{
+    const tr = document.createElement('tr');
+    cols.forEach(([, ri, cls]) => {{
+      const td = document.createElement('td');
+      if (cls) td.className = cls;
+      td.textContent = r[ri] ?? '';
+      tr.appendChild(td);
+    }});
+    tbody.appendChild(tr);
+  }});
+
+  // Count line
+  const countEl = document.getElementById('tableCount');
+  if (countEl) countEl.textContent = sorted.length + ' record' + (sorted.length !== 1 ? 's' : '');
+}}
+
+let _currentTableRecords = DATA.raw_records;
+updateAllCharts(DATA.raw_records);
 </script>
 </body>
 </html>"""
