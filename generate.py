@@ -40,6 +40,7 @@ def scrape():
         if len(cells) == 11:
             visa       = cells[2].get_text(strip=True)
             entry      = cells[3].get_text(strip=True)
+            consulate  = cells[4].get_text(strip=True)
             status     = cells[6].get_text(strip=True)
             check_date = cells[7].get_text(strip=True)
             date       = cells[8].get_text(strip=True)
@@ -55,6 +56,7 @@ def scrape():
                     "status": status,
                     "check_date": check_date,
                     "entry": entry,
+                    "consulate": consulate,
                 })
     return records
 
@@ -67,6 +69,7 @@ def build_data(records):
     day_days = defaultdict(list)
     check_status_counts = defaultdict(lambda: defaultdict(int))  # check_date -> status -> count
     entry_counts = defaultdict(int)
+    consulate_counts = defaultdict(int)
 
     for r in records:
         counts[r["visa"]][r["date"]] += 1
@@ -78,6 +81,8 @@ def build_data(records):
             check_status_counts[cd][r["status"]] += 1
         if r["entry"]:
             entry_counts[r["entry"]] += 1
+        if r["consulate"]:
+            consulate_counts[r["consulate"]] += 1
 
     groups_visas = [["B1", "B2"], ["F1", "F2"], ["H1", "H4"], ["J1", "J2"], ["L1", "L2"], ["O1"]]
     stats = {}
@@ -123,6 +128,7 @@ def build_data(records):
         "daily_stats": daily_stats,
         "check_dist": check_dist,
         "entry_dist": dict(entry_counts),
+        "consulate_dist": dict(consulate_counts),
     }
 
 
@@ -311,23 +317,24 @@ new Chart(document.getElementById('cCD'), {{
   }}
 }});
 
-// Card 9: visa entry pie chart (New vs Renewal)
+// Card 9: consulate pie chart
 const entryCard = document.createElement('div');
 entryCard.className = 'card';
-entryCard.innerHTML = '<h3>Visa Entry Type</h3><div style="position:relative;height:220px"><canvas id="cEntry"></canvas></div>';
+entryCard.innerHTML = '<h3>Consulate Distribution</h3><div style="position:relative;height:220px"><canvas id="cEntry"></canvas></div>';
 grid.appendChild(entryCard);
 
-const entryDist = DATA.entry_dist || {{}};
-const entryLabels = Object.keys(entryDist);
-const entryValues = entryLabels.map(k => entryDist[k]);
-const entryColors = ['#2196F3','#FF9800','#4CAF50','#9C27B0','#F44336','#607D8B'];
+const consDist = DATA.consulate_dist || {{}};
+// Sort by count descending
+const consLabels = Object.keys(consDist).sort((a, b) => consDist[b] - consDist[a]);
+const consValues = consLabels.map(k => consDist[k]);
+const consColors = ['#2196F3','#FF9800','#4CAF50','#9C27B0','#F44336','#607D8B','#00BCD4','#795548','#E91E63','#3F51B5','#009688','#FF5722'];
 new Chart(document.getElementById('cEntry'), {{
   type: 'pie',
   data: {{
-    labels: entryLabels,
+    labels: consLabels,
     datasets: [{{
-      data: entryValues,
-      backgroundColor: entryColors.slice(0, entryLabels.length),
+      data: consValues,
+      backgroundColor: consColors.slice(0, consLabels.length),
       borderWidth: 1,
       borderColor: '#fff',
     }}]
@@ -336,7 +343,7 @@ new Chart(document.getElementById('cEntry'), {{
     responsive: true,
     maintainAspectRatio: false,
     plugins: {{
-      legend: {{ position: 'bottom', labels: {{ font: {{ size: 11 }}, padding: 10 }} }},
+      legend: {{ position: 'bottom', labels: {{ font: {{ size: 9 }}, padding: 6 }} }},
       tooltip: {{
         callbacks: {{
           label: (ctx) => {{
