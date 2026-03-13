@@ -203,21 +203,22 @@ def generate_html(data, updated):
   @media (max-width: 900px) {{ .grid {{ grid-template-columns: repeat(2, 1fr); }} }}
   @media (max-width: 600px) {{ .grid {{ grid-template-columns: 1fr; }} }}
 /* ── Records table ─────────────────────────────────────────────── */
-#recordsTable {{ width:100%; border-collapse:collapse; font-size:12px; }}
+#recordsTable {{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }}
 #recordsTable thead th {{
   position: sticky; top: 0;
   background: #f0f0f0; border-bottom: 2px solid #ddd;
   padding: 6px 8px; text-align: left; white-space: nowrap;
-  cursor: pointer; user-select: none;
+  cursor: pointer; user-select: none; overflow: hidden; text-overflow: ellipsis;
 }}
 #recordsTable thead th:hover {{ background: #e4e4e4; }}
 #recordsTable tbody tr:nth-child(even) {{ background: #f9f9f9; }}
 #recordsTable tbody tr:hover {{ background: #eef4ff; }}
 #recordsTable tbody td {{
   padding: 5px 8px; border-bottom: 1px solid #eee;
-  vertical-align: top;
+  vertical-align: top; overflow: hidden;
 }}
-#recordsTable td.col-details {{ max-width: 300px; white-space: pre-wrap; word-break: break-word; font-size:11px; }}
+#recordsTable td.col-details {{ white-space: pre-wrap; word-break: break-word; font-size:11px; }}
+#recordsTable td:not(.col-details) {{ white-space: nowrap; text-overflow: ellipsis; }}
 #recordsTable td.col-days {{ text-align: right; }}
 .table-sort-asc::after  {{ content: ' ▲'; font-size:10px; }}
 .table-sort-desc::after {{ content: ' ▼'; font-size:10px; }}
@@ -684,16 +685,17 @@ let tableSortCol = 0;   // default: complete date (col index 0 in cols array)
 let tableSortDir = -1;  // -1 = desc (newest first)
 
 function renderTable(records) {{
+  // cols: [label, record-index, css-class, width]
   const cols = [
-    ['Status',        3, ''],
-    ['Check Date',    4, ''],
-    ['Complete Date', 0, ''],
-    ['Waiting Days',  2, 'col-days'],
-    ['Visa Type',     1, ''],
-    ['Entry',         6, ''],
-    ['Consulate',     5, ''],
-    ['Major',         7, ''],
-    ['Details',       8, 'col-details'],
+    ['Status',        3, '',           '62px'],
+    ['Check Date',    4, '',           '92px'],
+    ['Complete Date', 0, '',           '105px'],
+    ['Waiting Days',  2, 'col-days',   '88px'],
+    ['Visa Type',     1, '',           '72px'],
+    ['Entry',         6, '',           '52px'],
+    ['Consulate',     5, '',           '90px'],
+    ['Major',         7, '',           '140px'],
+    ['Details',       8, 'col-details',''],
   ];
 
   // Build header once
@@ -704,10 +706,11 @@ function renderTable(records) {{
     thNum.textContent = '#';
     thNum.style.cssText = 'width:36px;text-align:right;color:#aaa';
     tr.appendChild(thNum);
-    cols.forEach(([label, , cls], ci) => {{
+    cols.forEach(([label, , cls, w], ci) => {{
       const th = document.createElement('th');
       th.textContent = label;
       if (cls) th.className = cls;
+      if (w) th.style.width = w;
       th.dataset.ci = ci;
       th.addEventListener('click', () => {{
         if (tableSortCol === ci) {{ tableSortDir *= -1; }}
