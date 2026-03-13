@@ -686,13 +686,13 @@ let tableSortDir = -1;  // -1 = desc (newest first)
 function renderTable(records) {{
   const cols = [
     ['Status',        3, ''],
+    ['Check Date',    4, ''],
+    ['Complete Date', 0, ''],
+    ['Waiting Days',  2, 'col-days'],
     ['Visa Type',     1, ''],
     ['Entry',         6, ''],
     ['Consulate',     5, ''],
     ['Major',         7, ''],
-    ['Check Date',    4, ''],
-    ['Complete Date', 0, ''],
-    ['Waiting Days',  2, 'col-days'],
     ['Details',       8, 'col-details'],
   ];
 
