@@ -180,7 +180,7 @@ const DATA = {data_json};
 const groups = [
   {{ label: 'Business / Visitor', visas: ['B1','B2'], colors: ['#9C27B0','#E91E63'] }},
   {{ label: 'Student',            visas: ['F1','F2'], colors: ['#4CAF50','#8BC34A'] }},
-  {{ label: 'Work (H)',           visas: ['H1','H4'], colors: ['#2196F3','#00BCD4'] }},
+  {{ label: 'Work',               visas: ['H1','H4'], colors: ['#2196F3','#00BCD4'] }},
   {{ label: 'Exchange Visitor',   visas: ['J1','J2'], colors: ['#FF9800','#FF5722'] }},
   {{ label: 'Intracompany',       visas: ['L1','L2'], colors: ['#607D8B','#795548'] }},
   {{ label: 'Extraordinary Ability', visas: ['O1'],   colors: ['#FFC107'] }},
@@ -502,8 +502,7 @@ chartInstances['cCD'] = new Chart(document.getElementById('cCD'), {{
 const entryCard = document.createElement('div');
 entryCard.className = 'card';
 entryCard.innerHTML =
-  '<h3>Consulate Distribution ' +
-  '<span style="font-weight:normal;color:#bbb;font-size:10px">(click to filter)</span></h3>' +
+  '<h3>Consulate Distribution (click to filter)</h3>' +
   '<canvas id="cEntry"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">click a slice · click again to reset</span></div>';
 grid.appendChild(entryCard);
