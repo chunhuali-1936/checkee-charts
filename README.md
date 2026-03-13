@@ -4,6 +4,8 @@ Daily US visa administrative processing charts, auto-updated from [checkee.info]
 
 **Live dashboard → https://chunhuali-1936.github.io/checkee-charts**
 
+![Dashboard Screenshot](screenshot.png)
+
 ## What it shows
 
 Six subplots breaking down completed cases over the last 90 days by visa category:
