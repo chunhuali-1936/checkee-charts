@@ -7,15 +7,44 @@ from collections import defaultdict
 import json
 import re
 import statistics
+import time
 from datetime import datetime, timezone, timedelta
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Referer": "https://www.checkee.info/",
+}
+
+
+def fetch_with_retry(url, retries=4, backoff=15):
+    """GET with retries on 403/429/5xx."""
+    for attempt in range(retries):
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=30)
+            if r.status_code in (403, 429, 503) and attempt < retries - 1:
+                wait = backoff * (attempt + 1)
+                print(f"  Got {r.status_code}, retrying in {wait}s (attempt {attempt+1}/{retries})...")
+                time.sleep(wait)
+                continue
+            r.raise_for_status()
+            return r
+        except requests.exceptions.RequestException as e:
+            if attempt < retries - 1:
+                wait = backoff * (attempt + 1)
+                print(f"  Request error: {e}, retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
 
 
 def scrape():
-    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
-
     # Step 1: read the "Last 90 Days" dispdate directly from the site's own dropdown
-    base = requests.get("https://www.checkee.info/main.php?sortby=clear_date", headers=headers, timeout=30)
-    base.raise_for_status()
+    base = fetch_with_retry("https://www.checkee.info/main.php?sortby=clear_date")
     base_soup = BeautifulSoup(base.text, "html.parser")
     dispdate = None
     for select in base_soup.find_all("select", {"name": "dispdate"}):
@@ -31,8 +60,7 @@ def scrape():
 
     # Step 2: fetch full 90-day dataset
     url = f"https://www.checkee.info/main.php?sortby=clear_date&dispdate={dispdate}"
-    r = requests.get(url, headers=headers, timeout=30)
-    r.raise_for_status()
+    r = fetch_with_retry(url)
 
     soup = BeautifulSoup(r.text, "html.parser")
     records = []
@@ -621,8 +649,14 @@ filterPill.addEventListener('click', () => {{
 
 
 if __name__ == "__main__":
+    import sys
     print("Scraping checkee.info...")
-    records = scrape()
+    try:
+        records = scrape()
+    except Exception as e:
+        print(f"ERROR: scrape failed after all retries: {e}")
+        print("Keeping existing index.html unchanged.")
+        sys.exit(0)
     print(f"Found {len(records)} records")
     data = build_data(records)
     print(f"Dates: {data['dates'][0] if data['dates'] else 'none'} → {data['dates'][-1] if data['dates'] else 'none'}")
