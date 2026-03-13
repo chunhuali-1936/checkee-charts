@@ -229,7 +229,7 @@ def generate_html(data, updated):
 <p class="updated">Last updated: {updated} &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
-<div style="max-width:1400px;margin:0 auto 24px;padding:0 16px">
+<div style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
   <div class="card">
     <h3>All Records (Last 90 Days)</h3>
     <div id="tableCount"></div>
