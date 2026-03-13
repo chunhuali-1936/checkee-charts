@@ -231,7 +231,7 @@ def generate_html(data, updated):
 <div class="grid" id="grid"></div>
 <div style="max-width:1400px;margin:0 auto 24px;padding:0 16px">
   <div class="card">
-    <h3>All Records</h3>
+    <h3>All Records (Last 90 Days)</h3>
     <div id="tableCount"></div>
     <table id="recordsTable"><thead></thead><tbody></tbody></table>
   </div>
