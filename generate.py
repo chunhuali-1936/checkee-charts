@@ -320,7 +320,9 @@ new Chart(document.getElementById('cCD'), {{
 // Card 9: consulate pie chart
 const entryCard = document.createElement('div');
 entryCard.className = 'card';
-entryCard.innerHTML = '<h3>Consulate Distribution</h3><div style="position:relative;height:220px"><canvas id="cEntry"></canvas></div>';
+entryCard.style.display = 'flex';
+entryCard.style.flexDirection = 'column';
+entryCard.innerHTML = '<h3>Consulate Distribution</h3><div style="position:relative;flex:1;min-height:0"><canvas id="cEntry"></canvas></div>';
 grid.appendChild(entryCard);
 
 const consDist = DATA.consulate_dist || {{}};
