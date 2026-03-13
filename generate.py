@@ -70,6 +70,7 @@ def scrape():
             visa       = cells[2].get_text(strip=True)
             entry      = cells[3].get_text(strip=True)
             consulate  = cells[4].get_text(strip=True)
+            major      = cells[5].get_text(strip=True)
             status     = cells[6].get_text(strip=True)
             check_date = cells[7].get_text(strip=True)
             date       = cells[8].get_text(strip=True)
@@ -77,6 +78,7 @@ def scrape():
                 days = int(cells[9].get_text(strip=True))
             except ValueError:
                 continue
+            details    = cells[10].get_text(strip=True)
             if re.match(r"^\d{4}-\d{2}-\d{2}$", date) and visa and 0 <= days < 2000:
                 records.append({
                     "date": date,
@@ -86,6 +88,8 @@ def scrape():
                     "check_date": check_date,
                     "entry": entry,
                     "consulate": consulate,
+                    "major": major,
+                    "details": details,
                 })
     return records
 
