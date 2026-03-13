@@ -166,7 +166,6 @@ def generate_html(data, updated):
   .card {{ background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }}
   .card h3 {{ text-align: center; font-size: 12px; font-weight: bold; margin-bottom: 8px; }}
   .stats {{ display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 11px; color: #888; border-top: 1px solid #f0f0f0; padding-top: 7px; }}
-  .pie-hint {{ text-align: center; font-size: 10px; color: #bbb; margin-top: 5px; }}
   @media (max-width: 900px) {{ .grid {{ grid-template-columns: repeat(2, 1fr); }} }}
   @media (max-width: 600px) {{ .grid {{ grid-template-columns: 1fr; }} }}
 </style>
@@ -465,8 +464,8 @@ entryCard.className = 'card';
 entryCard.innerHTML =
   '<h3>Consulate Distribution ' +
   '<span style="font-weight:normal;color:#bbb;font-size:10px">(click to filter)</span></h3>' +
-  '<div style="position:relative;height:220px"><canvas id="cEntry"></canvas></div>' +
-  '<p class="pie-hint">click a slice · click again to reset</p>';
+  '<canvas id="cEntry"></canvas>' +
+  '<div class="stats"><span style="color:#aaa;font-size:10px">click a slice · click again to reset</span></div>';
 grid.appendChild(entryCard);
 
 const consDist   = DATA.consulate_dist || {{}};
@@ -488,7 +487,7 @@ chartInstances['cEntry'] = new Chart(document.getElementById('cEntry'), {{
   }},
   options: {{
     responsive: true,
-    maintainAspectRatio: false,
+    aspectRatio: 2,
     onClick: (evt, elements) => {{
       if (!elements.length) return;
       const consulate = consLabels[elements[0].index];
