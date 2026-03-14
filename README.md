@@ -2,7 +2,7 @@
 
 Auto-updated US visa administrative processing dashboard, sourced from [checkee.info](https://www.checkee.info).
 
-**Live dashboard → https://chunhuali-1936.github.io/checkee-charts**
+**Live dashboard → https://baleen1936.github.io/checkee-charts**
 
 ![Dashboard Screenshot](screenshot.png)
 
