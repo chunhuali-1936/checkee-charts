@@ -227,12 +227,14 @@ def generate_html(data, updated):
     cursor: pointer; user-select: none;
   }}
   .filter-pill:hover {{ background: #bbdefb; }}
-  .grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; align-items: start; }}
+  .grid  {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; align-items: start; }}
+  .grid2 {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; align-items: start; }}
   .card {{ background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }}
   .card h3 {{ text-align: center; font-size: 12px; font-weight: bold; margin-bottom: 8px; }}
   .stats {{ display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 11px; color: #888; border-top: 1px solid #f0f0f0; padding-top: 7px; }}
-  @media (max-width: 900px) {{ .grid {{ grid-template-columns: repeat(2, 1fr); }} }}
-  @media (max-width: 600px) {{ .grid {{ grid-template-columns: 1fr; }} }}
+  @media (max-width: 1100px) {{ .grid2 {{ grid-template-columns: repeat(2, 1fr); }} }}
+  @media (max-width: 900px)  {{ .grid  {{ grid-template-columns: repeat(2, 1fr); }} }}
+  @media (max-width: 600px)  {{ .grid, .grid2 {{ grid-template-columns: 1fr; }} }}
 /* ── Records table ─────────────────────────────────────────────── */
 #recordsTable {{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }}
 #recordsTable thead th {{
@@ -263,13 +265,7 @@ def generate_html(data, updated):
 <p class="updated">Last updated: {updated} &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
-<div style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
-  <div class="card">
-    <h3>Monthly Cases (Trailing 12 Months)</h3>
-    <canvas id="cMonthly"></canvas>
-    <div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = % by status &nbsp;·&nbsp; line = total cases</span></div>
-  </div>
-</div>
+<div class="grid2" id="grid2"></div>
 <div style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
   <div class="card">
     <h3>All Records (Last 90 Days)</h3>
@@ -476,7 +472,8 @@ waitCard.innerHTML =
   '<h3>Waiting Days (All Visa Types)</h3>' +
   '<canvas id="cWait"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">shaded band = min–max &nbsp;·&nbsp; line = median</span></div>';
-grid.appendChild(waitCard);
+const grid2 = document.getElementById('grid2');
+grid2.appendChild(waitCard);
 
 const dstat0 = DATA.daily_stats;
 chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {{
@@ -541,7 +538,7 @@ const cdCard = document.createElement('div');
 cdCard.className = 'card';
 cdCard.innerHTML = '<h3>Check Date Distribution (All Visa Types)</h3><canvas id="cCD"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = status &nbsp;·&nbsp; curve = normal dist. fit</span></div>';
-grid.appendChild(cdCard);
+grid2.appendChild(cdCard);
 
 const cd = DATA.check_dist;
 function cdNormalLine(dates, counts, statuses) {{
@@ -613,7 +610,7 @@ entryCard.innerHTML =
   '<h3>Consulate Distribution (All Visa Types)</h3>' +
   '<canvas id="cEntry"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">click a slice · click again to reset</span></div>';
-grid.appendChild(entryCard);
+grid2.appendChild(entryCard);
 
 const consDist   = DATA.consulate_dist || {{}};
 const consLabels = Object.keys(consDist).sort((a, b) => consDist[b] - consDist[a]);
@@ -724,6 +721,11 @@ filterPill.addEventListener('click', () => {{
 (function() {{
   const monthly = DATA.monthly;
   if (!monthly || !monthly.months.length) return;
+  const monthlyCard = document.createElement('div');
+  monthlyCard.className = 'card';
+  monthlyCard.innerHTML = '<h3>Monthly Cases (Trailing 12 Months)</h3><canvas id="cMonthly"></canvas>' +
+    '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = % by status &nbsp;·&nbsp; line = total cases</span></div>';
+  grid2.appendChild(monthlyCard);
   const mLabels = monthly.months.map(function(m) {{
     const p = m.split('-');
     return new Date(+p[0], +p[1] - 1, 1).toLocaleDateString('en-US', {{ month: 'short', year: 'numeric' }});
