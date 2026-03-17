@@ -95,7 +95,37 @@ def scrape():
     return records
 
 
-def build_data(records):
+def scrape_monthly():
+    """Scrape homepage monthly case table; return trailing 12 months."""
+    r = fetch_with_retry("https://www.checkee.info/")
+    soup = BeautifulSoup(r.text, "html.parser")
+    rows = []
+    for tr in soup.find_all("tr"):
+        cells = tr.find_all("td")
+        if len(cells) >= 6:
+            month = cells[1].get_text(strip=True)
+            if not re.match(r"^\d{4}-\d{2}$", month):
+                continue
+            try:
+                pending = int(cells[2].get_text(strip=True))
+                clear   = int(cells[3].get_text(strip=True))
+                reject  = int(cells[4].get_text(strip=True))
+                total   = int(cells[5].get_text(strip=True))
+            except ValueError:
+                continue
+            rows.append({"month": month, "pending": pending, "clear": clear, "reject": reject, "total": total})
+    rows.sort(key=lambda x: x["month"])
+    rows = rows[-12:]
+    return {
+        "months":  [r["month"]   for r in rows],
+        "pending": [r["pending"] for r in rows],
+        "clear":   [r["clear"]   for r in rows],
+        "reject":  [r["reject"]  for r in rows],
+        "total":   [r["total"]   for r in rows],
+    }
+
+
+def build_data(records, monthly):
     dates = sorted(set(r["date"] for r in records))
 
     counts = defaultdict(lambda: defaultdict(int))
@@ -171,6 +201,7 @@ def build_data(records):
         "entry_dist": dict(entry_counts),
         "consulate_dist": dict(consulate_counts),
         "raw_records": raw_records,
+        "monthly": monthly,
     }
 
 
@@ -232,6 +263,13 @@ def generate_html(data, updated):
 <p class="updated">Last updated: {updated} &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
+<div style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
+  <div class="card">
+    <h3>Monthly Cases (Trailing 12 Months)</h3>
+    <canvas id="cMonthly"></canvas>
+    <div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = % by status &nbsp;·&nbsp; line = total cases</span></div>
+  </div>
+</div>
 <div style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
   <div class="card">
     <h3>All Records (Last 90 Days)</h3>
@@ -682,6 +720,55 @@ filterPill.addEventListener('click', () => {{
   updateAllCharts(DATA.raw_records);
 }});
 
+// ── Monthly overview chart ────────────────────────────────────────────────────
+(function() {{
+  const monthly = DATA.monthly;
+  if (!monthly || !monthly.months.length) return;
+  const mLabels = monthly.months.map(function(m) {{
+    const p = m.split('-');
+    return new Date(+p[0], +p[1] - 1, 1).toLocaleDateString('en-US', {{ month: 'short', year: 'numeric' }});
+  }});
+  const pct = function(arr, i) {{ return monthly.total[i] ? +(arr[i] / monthly.total[i] * 100).toFixed(1) : 0; }};
+  new Chart(document.getElementById('cMonthly'), {{
+    type: 'bar',
+    data: {{
+      labels: mLabels,
+      datasets: [
+        {{ label: 'Clear',   data: monthly.months.map(function(_,i){{ return pct(monthly.clear,i);   }}), backgroundColor: '#F8BBD0', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
+        {{ label: 'Reject',  data: monthly.months.map(function(_,i){{ return pct(monthly.reject,i);  }}), backgroundColor: '#333333', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
+        {{ label: 'Pending', data: monthly.months.map(function(_,i){{ return pct(monthly.pending,i); }}), backgroundColor: '#90CAF9', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
+        {{ type: 'line', label: 'Total Cases', data: monthly.total, borderColor: '#e67e22', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, pointStyle: 'circle', tension: 0.3, fill: false, order: 1, yAxisID: 'yTotal' }},
+      ],
+    }},
+    options: {{
+      responsive: true,
+      plugins: {{
+        legend: {{ position: 'top', labels: {{ font: {{ size: 11 }}, padding: 8, usePointStyle: true }} }},
+        tooltip: {{
+          mode: 'index', intersect: false,
+          callbacks: {{
+            label: function(ctx) {{
+              if (ctx.dataset.type === 'line') return 'Total: ' + ctx.parsed.y;
+              const i = ctx.dataIndex;
+              const abs = {{ 'Clear': monthly.clear[i], 'Reject': monthly.reject[i], 'Pending': monthly.pending[i] }}[ctx.dataset.label] ?? '';
+              return ctx.dataset.label + ': ' + ctx.parsed.y + '% (' + abs + ')';
+            }},
+          }},
+        }},
+      }},
+      scales: {{
+        x: {{ stacked: true, ticks: {{ font: {{ size: 10 }} }} }},
+        yPct: {{ type: 'linear', position: 'left', stacked: true, min: 0, max: 100,
+          title: {{ display: true, text: '% of Cases', font: {{ size: 10 }} }},
+          ticks: {{ callback: function(v) {{ return v + '%'; }} }} }},
+        yTotal: {{ type: 'linear', position: 'right', beginAtZero: true,
+          title: {{ display: true, text: 'Total Cases', font: {{ size: 10 }} }},
+          grid: {{ drawOnChartArea: false }} }},
+      }},
+    }},
+  }});
+}})();
+
 // ── Records table ─────────────────────────────────────────────────────────
 let tableSortCol = 2;   // default: complete date (col index 2 in cols array)
 let tableSortDir = -1;  // -1 = desc (newest first)
@@ -778,7 +865,14 @@ if __name__ == "__main__":
         print("Keeping existing index.html unchanged.")
         sys.exit(0)
     print(f"Found {len(records)} records")
-    data = build_data(records)
+    print("Scraping monthly case table...")
+    try:
+        monthly = scrape_monthly()
+        print(f"Monthly rows: {len(monthly['months'])}")
+    except Exception as e:
+        print(f"WARNING: monthly scrape failed: {e}. Using empty data.")
+        monthly = {"months": [], "pending": [], "clear": [], "reject": [], "total": []}
+    data = build_data(records, monthly)
     print(f"Dates: {data['dates'][0] if data['dates'] else 'none'} → {data['dates'][-1] if data['dates'] else 'none'}")
     print(f"Statuses found: {data['check_dist']['statuses']}")
     print(f"Check dates: {len(data['check_dist']['dates'])} days")
