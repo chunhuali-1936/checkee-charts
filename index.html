@@ -52,7 +52,7 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-03-18 03:41 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-03-18 03:42 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
@@ -512,7 +512,7 @@ filterPill.addEventListener('click', () => {
   if (!monthly || !monthly.months.length) return;
   const monthlyCard = document.createElement('div');
   monthlyCard.className = 'card';
-  monthlyCard.innerHTML = '<h3>Monthly Cases (Trailing 5 Years)</h3><canvas id="cMonthly"></canvas>' +
+  monthlyCard.innerHTML = '<h3>Monthly Cases (Trailing 5 Years)</h3><canvas id="cMonthly" style="max-height:220px"></canvas>' +
     '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = % by status &nbsp;·&nbsp; line = total cases</span></div>';
   document.getElementById('monthlyWrap').appendChild(monthlyCard);
   const mLabels = monthly.months.map(function(m) {
@@ -533,6 +533,7 @@ filterPill.addEventListener('click', () => {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { position: 'top', labels: { font: { size: 11 }, padding: 8, usePointStyle: true } },
         tooltip: {

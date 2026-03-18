@@ -721,7 +721,7 @@ filterPill.addEventListener('click', () => {{
   if (!monthly || !monthly.months.length) return;
   const monthlyCard = document.createElement('div');
   monthlyCard.className = 'card';
-  monthlyCard.innerHTML = '<h3>Monthly Cases (Trailing 5 Years)</h3><canvas id="cMonthly"></canvas>' +
+  monthlyCard.innerHTML = '<h3>Monthly Cases (Trailing 5 Years)</h3><canvas id="cMonthly" style="max-height:220px"></canvas>' +
     '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = % by status &nbsp;·&nbsp; line = total cases</span></div>';
   document.getElementById('monthlyWrap').appendChild(monthlyCard);
   const mLabels = monthly.months.map(function(m) {{
@@ -742,6 +742,7 @@ filterPill.addEventListener('click', () => {{
     }},
     options: {{
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {{
         legend: {{ position: 'top', labels: {{ font: {{ size: 11 }}, padding: 8, usePointStyle: true }} }},
         tooltip: {{
