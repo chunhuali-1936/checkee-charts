@@ -115,7 +115,7 @@ def scrape_monthly():
                 continue
             rows.append({"month": month, "pending": pending, "clear": clear, "reject": reject, "total": total})
     rows.sort(key=lambda x: x["month"])
-    rows = rows[-60:]
+    rows = rows[-120:]
     return {
         "months":  [r["month"]   for r in rows],
         "pending": [r["pending"] for r in rows],
@@ -721,7 +721,7 @@ filterPill.addEventListener('click', () => {{
   if (!monthly || !monthly.months.length) return;
   const monthlyCard = document.createElement('div');
   monthlyCard.className = 'card';
-  monthlyCard.innerHTML = '<h3>Monthly Cases (Trailing 5 Years)</h3><canvas id="cMonthly" style="max-height:220px"></canvas>' +
+  monthlyCard.innerHTML = '<h3>Monthly Cases (Trailing 10 Years)</h3><canvas id="cMonthly" style="max-height:220px"></canvas>' +
     '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = % by status &nbsp;·&nbsp; line = total cases</span></div>';
   document.getElementById('monthlyWrap').appendChild(monthlyCard);
   const mLabels = monthly.months.map(function(m) {{
