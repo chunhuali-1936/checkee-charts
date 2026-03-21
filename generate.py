@@ -866,6 +866,9 @@ if __name__ == "__main__":
         print("Keeping existing index.html unchanged.")
         sys.exit(0)
     print(f"Found {len(records)} records")
+    if not records:
+        print("WARNING: 0 records returned (site may be blocking CI). Keeping existing index.html.")
+        sys.exit(0)
     print("Scraping monthly case table...")
     try:
         monthly = scrape_monthly()
