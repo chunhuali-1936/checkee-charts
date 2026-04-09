@@ -19,7 +19,8 @@
   }
   .filter-pill:hover { background: #bbdefb; }
   .grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; align-items: start; }
-  .monthly-wrap { padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; }
+  .monthly-wrap { padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .monthly-wrap { grid-template-columns: 1fr; } }
   .card { background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
   .card h3 { text-align: center; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
   .stats { display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 11px; color: #888; border-top: 1px solid #f0f0f0; padding-top: 7px; }
@@ -52,11 +53,10 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-04-09 20:55 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-04-09 20:59 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
-<div class="monthly-wrap" id="waitWrap"></div>
 <div style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
   <div class="card">
     <h3>All Records (Last 90 Days)</h3>
@@ -542,7 +542,7 @@ filterPill.addEventListener('click', () => {
     waitCard2.className = 'card';
     waitCard2.innerHTML = '<h3>Avg Waiting Days for Completed Cases (Trailing 10 Years)</h3><canvas id="cAvgWait" style="max-height:220px"></canvas>' +
       '<div class="stats"><span style="color:#aaa;font-size:10px">line = avg waiting days for cleared/rejected cases that month</span></div>';
-    document.getElementById('waitWrap').appendChild(waitCard2);
+    document.getElementById('monthlyWrap').appendChild(waitCard2);
     new Chart(document.getElementById('cAvgWait'), {
       type: 'line',
       data: {
