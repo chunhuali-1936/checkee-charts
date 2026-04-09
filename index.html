@@ -12,23 +12,23 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #f5f5f5; font-family: 'Inter', Arial, sans-serif; }
-  h1 { text-align: center; font-size: 24px; font-weight: 700; padding: 24px 0 6px; letter-spacing: -0.3px; }
-  .updated { text-align: center; font-size: 11px; color: #999; margin-bottom: 10px; }
-  .updated a { color: #999; }
+  body { background: #f8f7f4; font-family: 'Inter', Arial, sans-serif; color: #1e293b; }
+  h1 { text-align: center; font-size: 24px; font-weight: 700; padding: 24px 0 6px; letter-spacing: -0.3px; color: #1e293b; }
+  .updated { text-align: center; font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
+  .updated a { color: #94a3b8; }
   .filter-pill {
     display: none; margin: 0 auto 14px; width: fit-content;
-    background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9;
+    background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;
     border-radius: 20px; padding: 4px 14px; font-size: 12px;
     cursor: pointer; user-select: none; font-weight: 500;
   }
-  .filter-pill.active { background: #1565c0; color: #fff; border-color: #1565c0; }
-  .filter-pill:hover { background: #bbdefb; }
-  .filter-pill.active:hover { background: #0d47a1; }
+  .filter-pill.active { background: #d97706; color: #fff; border-color: #d97706; }
+  .filter-pill:hover { background: #fde68a; }
+  .filter-pill.active:hover { background: #b45309; }
   .grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; align-items: start; }
   .monthly-wrap { padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; }
-  .card { background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
-  .card h3 { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .card { background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+  .card h3 { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #1e293b; }
   .stats { display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 11px; color: #888; border-top: 1px solid #f0f0f0; padding-top: 7px; }
   @media (max-width: 900px)  { .grid  { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 600px)  { .grid { grid-template-columns: 1fr; } }
@@ -59,7 +59,7 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-04-09 21:13 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-04-09 21:15 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
