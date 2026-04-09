@@ -299,17 +299,17 @@ def generate_html(data, updated):
 <script>
 const DATA = {data_json};
 const groups = [
-  {{ label: 'Business / Visitor', visas: ['B1','B2'], colors: ['#4B6CB7','#95ADDF'] }},
-  {{ label: 'Student',            visas: ['F1','F2'], colors: ['#4B6CB7','#95ADDF'] }},
-  {{ label: 'Work',               visas: ['H1','H4'], colors: ['#4B6CB7','#95ADDF'] }},
-  {{ label: 'Exchange Visitor',   visas: ['J1','J2'], colors: ['#4B6CB7','#95ADDF'] }},
-  {{ label: 'Intracompany',       visas: ['L1','L2'], colors: ['#4B6CB7','#95ADDF'] }},
-  {{ label: 'Extraordinary Ability', visas: ['O1'],   colors: ['#4B6CB7'] }},
+  {{ label: 'Business / Visitor', visas: ['B1','B2'], colors: ['#4E79A7','#9CBDDB'] }},
+  {{ label: 'Student',            visas: ['F1','F2'], colors: ['#59A14F','#97CB8F'] }},
+  {{ label: 'Work',               visas: ['H1','H4'], colors: ['#E15759','#F0AAAB'] }},
+  {{ label: 'Exchange Visitor',   visas: ['J1','J2'], colors: ['#F28E2B','#F8BF80'] }},
+  {{ label: 'Intracompany',       visas: ['L1','L2'], colors: ['#76B7B2','#AADBD7'] }},
+  {{ label: 'Extraordinary Ability', visas: ['O1'],   colors: ['#B07AA1'] }},
 ];
 
 // Status colors (defined early so updateAllCharts can reference them)
 const statusColors = {{}};
-const palette = ['#3A9E78','#C25B52','#7B96BC','#A07840','#A86878','#4E6A7A','#7A9AAA','#A09030'];
+const palette = ['#54A06B','#D4635A','#9DB0C8','#A07840','#A86878','#4E6A7A','#7A9AAA','#A09030'];
 (DATA.complete_dist.statuses || []).forEach((s, i) => {{
   statusColors[s] = palette[i % palette.length];
 }});
@@ -532,7 +532,7 @@ chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {{
       }},
       {{
         data: DATA.dates.map(d => dstat0[d] ? dstat0[d][0] : null),
-        borderColor: '#A07840',
+        borderColor: '#9C6EA0',
         backgroundColor: 'transparent',
         borderWidth: 2,
         pointRadius: 0,
@@ -709,9 +709,9 @@ filterPill.addEventListener('click', () => {{
     data: {{
       labels: mLabels,
       datasets: [
-        {{ label: 'Clear',   data: monthly.months.map(function(_,i){{ return pct(monthly.clear,i);   }}), backgroundColor: '#3A9E78', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
-        {{ label: 'Reject',  data: monthly.months.map(function(_,i){{ return pct(monthly.reject,i);  }}), backgroundColor: '#C25B52', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
-        {{ label: 'Pending', data: monthly.months.map(function(_,i){{ return pct(monthly.pending,i); }}), backgroundColor: '#7B96BC', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
+        {{ label: 'Clear',   data: monthly.months.map(function(_,i){{ return pct(monthly.clear,i);   }}), backgroundColor: '#54A06B', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
+        {{ label: 'Reject',  data: monthly.months.map(function(_,i){{ return pct(monthly.reject,i);  }}), backgroundColor: '#D4635A', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
+        {{ label: 'Pending', data: monthly.months.map(function(_,i){{ return pct(monthly.pending,i); }}), backgroundColor: '#9DB0C8', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
         {{ type: 'line', label: 'Total Cases', data: monthly.total, borderColor: '#1e293b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, pointStyle: 'circle', tension: 0.3, fill: false, order: 1, yAxisID: 'yTotal' }},
       ],
     }},
@@ -770,8 +770,8 @@ filterPill.addEventListener('click', () => {{
         datasets: [{{
           label: 'Avg Waiting Days',
           data: avgWait,
-          borderColor: '#A07840',
-          backgroundColor: 'rgba(160,120,64,0.10)',
+          borderColor: '#9C6EA0',
+          backgroundColor: 'rgba(156,110,160,0.08)',
           borderWidth: 2,
           pointRadius: 3,
           pointStyle: 'circle',
