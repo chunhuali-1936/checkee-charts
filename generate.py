@@ -299,12 +299,12 @@ def generate_html(data, updated):
 <script>
 const DATA = {data_json};
 const groups = [
-  {{ label: 'Business / Visitor', visas: ['B1','B2'], colors: ['#C07A8A','#E8A0A0'] }},
-  {{ label: 'Student',            visas: ['F1','F2'], colors: ['#5A9E7A','#8DC4A0'] }},
-  {{ label: 'Work',               visas: ['H1','H4'], colors: ['#4A7FA8','#7AAAC8'] }},
-  {{ label: 'Exchange Visitor',   visas: ['J1','J2'], colors: ['#C4863A','#E0AE70'] }},
-  {{ label: 'Intracompany',       visas: ['L1','L2'], colors: ['#5C7A8C','#8CAABB'] }},
-  {{ label: 'Extraordinary Ability', visas: ['O1'],   colors: ['#C4A835'] }},
+  {{ label: 'Business / Visitor', visas: ['B1','B2'], colors: ['#4A7FA8','#A8C8E0'] }},
+  {{ label: 'Student',            visas: ['F1','F2'], colors: ['#4A7FA8','#A8C8E0'] }},
+  {{ label: 'Work',               visas: ['H1','H4'], colors: ['#4A7FA8','#A8C8E0'] }},
+  {{ label: 'Exchange Visitor',   visas: ['J1','J2'], colors: ['#4A7FA8','#A8C8E0'] }},
+  {{ label: 'Intracompany',       visas: ['L1','L2'], colors: ['#4A7FA8','#A8C8E0'] }},
+  {{ label: 'Extraordinary Ability', visas: ['O1'],   colors: ['#4A7FA8'] }},
 ];
 
 // Status colors (defined early so updateAllCharts can reference them)
