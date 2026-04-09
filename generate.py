@@ -494,7 +494,7 @@ waitCard.innerHTML =
   '<h3>Waiting Days (All Visa Types)</h3>' +
   '<canvas id="cWait"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">shaded band = min–max &nbsp;·&nbsp; line = median</span></div>';
-// waitCard appended after cdCard (see below)
+grid.appendChild(waitCard);
 
 const dstat0 = DATA.daily_stats;
 chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {{
@@ -559,8 +559,7 @@ const cdCard = document.createElement('div');
 cdCard.className = 'card';
 cdCard.innerHTML = '<h3>Issue Date Distribution (All Visa Types)</h3><canvas id="cCD"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = status by issue date</span></div>';
-grid.appendChild(cdCard);
-grid.appendChild(waitCard);
+grid.insertBefore(cdCard, waitCard);
 
 const cd = DATA.complete_dist;
 chartInstances['cCD'] = new Chart(document.getElementById('cCD'), {{

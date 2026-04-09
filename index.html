@@ -52,7 +52,7 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-04-09 18:04 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-04-09 18:07 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
@@ -272,7 +272,7 @@ waitCard.innerHTML =
   '<h3>Waiting Days (All Visa Types)</h3>' +
   '<canvas id="cWait"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">shaded band = min–max &nbsp;·&nbsp; line = median</span></div>';
-// waitCard appended after cdCard (see below)
+grid.appendChild(waitCard);
 
 const dstat0 = DATA.daily_stats;
 chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {
@@ -337,8 +337,7 @@ const cdCard = document.createElement('div');
 cdCard.className = 'card';
 cdCard.innerHTML = '<h3>Issue Date Distribution (All Visa Types)</h3><canvas id="cCD"></canvas>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">stacked bars = status by issue date</span></div>';
-grid.appendChild(cdCard);
-grid.appendChild(waitCard);
+grid.insertBefore(cdCard, waitCard);
 
 const cd = DATA.complete_dist;
 chartInstances['cCD'] = new Chart(document.getElementById('cCD'), {
