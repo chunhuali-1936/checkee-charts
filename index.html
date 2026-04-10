@@ -59,7 +59,7 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-04-10 05:53 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-04-10 05:58 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
@@ -307,7 +307,7 @@ chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {
       },
       {
         data: DATA.dates.map(d => dstat0[d] ? dstat0[d][0] : null),
-        borderColor: '#9C6EA0',
+        borderColor: '#1e293b',
         backgroundColor: 'transparent',
         borderWidth: 2,
         pointRadius: 0,
@@ -512,9 +512,9 @@ filterPill.addEventListener('click', () => {
             value: mLabels.findIndex(function(l) { return l.includes('Jan') && l.includes('2020'); }),
             borderColor: 'rgba(180,0,0,0.35)', borderWidth: 1,
             borderDash: [4, 4],
-            label: { content: '🦠 COVID-19', display: true, position: 'start',
-              font: { size: 9 }, color: 'rgba(180,0,0,0.55)',
-              backgroundColor: 'transparent', padding: 2 },
+            label: { content: '🦠 COVID-19', display: true, position: 'end',
+              font: { size: 9 }, color: 'rgba(150,0,0,0.5)',
+              backgroundColor: 'rgba(255,255,255,0.85)', padding: { x:4, y:2 }, borderRadius: 2 },
           },
         } },
       },
@@ -552,7 +552,7 @@ filterPill.addEventListener('click', () => {
         datasets: [{
           label: 'Avg Waiting Days',
           data: avgWait,
-          borderColor: '#9C6EA0',
+          borderColor: '#1e293b',
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 0,
@@ -575,9 +575,9 @@ filterPill.addEventListener('click', () => {
               value: mLabels.findIndex(function(l) { return l.includes('Jan') && l.includes('2020'); }),
               borderColor: 'rgba(180,0,0,0.3)', borderWidth: 1,
               borderDash: [4, 4],
-              label: { content: '🦠 COVID-19', display: true, position: 'end',
-                font: { size: 9 }, color: 'rgba(180,0,0,0.45)',
-                backgroundColor: 'transparent', padding: 2 },
+              label: { content: '🦠 COVID-19', display: true, position: 'start',
+                font: { size: 9 }, color: 'rgba(150,0,0,0.5)',
+                backgroundColor: 'rgba(255,255,255,0.85)', padding: { x:4, y:2 }, borderRadius: 2 },
             },
             obama: {
               type: 'box', xScaleID: 'x',
