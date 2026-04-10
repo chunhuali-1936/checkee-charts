@@ -779,7 +779,7 @@ filterPill.addEventListener('click', () => {{
           data: avgWait,
           borderColor: '#1e293b',
           backgroundColor: 'transparent',
-          borderWidth: 2,
+          borderWidth: 1.5,
           pointRadius: 0,
           tension: 0.3,
           fill: false,
