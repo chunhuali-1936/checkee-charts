@@ -573,18 +573,34 @@ cdCard.innerHTML = '<h3>Issue Date Distribution (All Visa Types)</h3><canvas id=
 grid.insertBefore(cdCard, waitCard);
 
 const cd = DATA.complete_dist;
+const cdTotals = cd.dates.map(d => (cd.statuses || []).reduce((s, st) => s + ((cd.counts[st] || {{}})[d] || 0), 0));
+const cdAvg = cdTotals.length ? +(cdTotals.reduce((a, b) => a + b, 0) / cdTotals.length).toFixed(1) : 0;
 chartInstances['cCD'] = new Chart(document.getElementById('cCD'), {{
   type: 'bar',
   data: {{
     labels: cd.dates,
-    datasets: (cd.statuses || []).map(s => ({{
-      label: s,
-      data: cd.dates.map(d => (cd.counts[s] || {{}})[d] || 0),
-      backgroundColor: statusColors[s],
-      stack: 'stack',
-      order: 1,
-      pointStyle: 'rect',
-    }})),
+    datasets: [
+      ...(cd.statuses || []).map(s => ({{
+        label: s,
+        data: cd.dates.map(d => (cd.counts[s] || {{}})[d] || 0),
+        backgroundColor: statusColors[s],
+        stack: 'stack',
+        order: 2,
+        pointStyle: 'rect',
+      }})),
+      {{
+        type: 'line',
+        label: 'Daily Avg (' + cdAvg + ')',
+        data: cd.dates.map(() => cdAvg),
+        borderColor: '#1e293b',
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        borderDash: [6, 3],
+        pointRadius: 0,
+        fill: false,
+        order: 1,
+      }},
+    ],
   }},
   options: {{
     responsive: true,

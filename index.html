@@ -59,7 +59,7 @@
 </head>
 <body>
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
-<p class="updated">Last updated: 2026-04-11 16:27 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
+<p class="updated">Last updated: 2026-04-12 02:28 UTC &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <div id="filterPill" class="filter-pill"></div>
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
@@ -348,18 +348,34 @@ cdCard.innerHTML = '<h3>Issue Date Distribution (All Visa Types)</h3><canvas id=
 grid.insertBefore(cdCard, waitCard);
 
 const cd = DATA.complete_dist;
+const cdTotals = cd.dates.map(d => (cd.statuses || []).reduce((s, st) => s + ((cd.counts[st] || {})[d] || 0), 0));
+const cdAvg = cdTotals.length ? +(cdTotals.reduce((a, b) => a + b, 0) / cdTotals.length).toFixed(1) : 0;
 chartInstances['cCD'] = new Chart(document.getElementById('cCD'), {
   type: 'bar',
   data: {
     labels: cd.dates,
-    datasets: (cd.statuses || []).map(s => ({
-      label: s,
-      data: cd.dates.map(d => (cd.counts[s] || {})[d] || 0),
-      backgroundColor: statusColors[s],
-      stack: 'stack',
-      order: 1,
-      pointStyle: 'rect',
-    })),
+    datasets: [
+      ...(cd.statuses || []).map(s => ({
+        label: s,
+        data: cd.dates.map(d => (cd.counts[s] || {})[d] || 0),
+        backgroundColor: statusColors[s],
+        stack: 'stack',
+        order: 2,
+        pointStyle: 'rect',
+      })),
+      {
+        type: 'line',
+        label: 'Daily Avg (' + cdAvg + ')',
+        data: cd.dates.map(() => cdAvg),
+        borderColor: '#1e293b',
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        borderDash: [6, 3],
+        pointRadius: 0,
+        fill: false,
+        order: 1,
+      },
+    ],
   },
   options: {
     responsive: true,
