@@ -513,7 +513,7 @@ const waitCard = document.createElement('div');
 waitCard.className = 'card';
 waitCard.innerHTML =
   '<h3>Waiting Days (All Visa Types)</h3>' +
-  '<canvas id="cWait" style="height:200px"></canvas>' +
+  '<div style="position:relative;height:200px"><canvas id="cWait"></canvas></div>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">shaded band = min–max &nbsp;·&nbsp; line = median</span></div>';
 grid.appendChild(waitCard);
 
@@ -578,7 +578,7 @@ chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {{
 // ── Card 7: issue date distribution (appended before waitCard) ────────────────
 const cdCard = document.createElement('div');
 cdCard.className = 'card';
-cdCard.innerHTML = '<h3>Issue Date Distribution (All Visa Types)</h3><canvas id="cCD" style="height:200px"></canvas>' +
+cdCard.innerHTML = '<h3>Issue Date Distribution (All Visa Types)</h3><div style="position:relative;height:200px"><canvas id="cCD"></canvas></div>' +
   '<div class="stats" id="cdStats"></div>';
 grid.insertBefore(cdCard, waitCard);
 
@@ -628,7 +628,7 @@ const entryCard = document.createElement('div');
 entryCard.className = 'card';
 entryCard.innerHTML =
   '<h3>Consulate Distribution (All Visa Types)</h3>' +
-  '<canvas id="cEntry" style="height:200px"></canvas>' +
+  '<div style="position:relative;height:200px"><canvas id="cEntry"></canvas></div>' +
   '<div class="stats"><span style="color:#aaa;font-size:10px">click a bar · click again to reset</span></div>';
 grid.appendChild(entryCard);
 
