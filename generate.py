@@ -254,9 +254,10 @@ def generate_html(data, updated):
   .monthly-wrap {{ padding: 0 20px 24px; max-width: 1500px; margin: 0 auto; }}
   .card {{ background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }}
   .card h3 {{ text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #1e293b; }}
-  .stats {{ display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: 11px; color: #888; border-top: 1px solid #f0f0f0; padding-top: 7px; }}
+  .stats {{ display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 11px; color: #888; border-top: 1px solid #f0f0f0; padding-top: 7px; }}
   @media (max-width: 900px)  {{ .grid  {{ grid-template-columns: repeat(2, 1fr); }} }}
-  @media (max-width: 600px)  {{ .grid {{ grid-template-columns: 1fr; }} }}
+  @media (max-width: 600px)  {{ .grid {{ grid-template-columns: 1fr; padding: 0 12px 16px; gap: 12px; }} .monthly-wrap {{ padding: 0 12px 16px; }} h1 {{ font-size: 18px; padding: 16px 12px 4px; }} .outer-wrap {{ padding: 0 12px; }} }}
+  .table-scroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
 /* ── Records table ─────────────────────────────────────────────── */
 #recordsTable {{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }}
 #recordsTable thead th {{
@@ -289,11 +290,11 @@ def generate_html(data, updated):
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
 <div class="monthly-wrap" id="waitWrap"></div>
-<div style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
+<div class="outer-wrap" style="max-width:1500px;margin:0 auto 24px;padding:0 20px">
   <div class="card">
     <h3>All Records (Last 90 Days)</h3>
     <div id="tableCount"></div>
-    <table id="recordsTable"><thead></thead><tbody></tbody></table>
+    <div class="table-scroll"><table id="recordsTable"><thead></thead><tbody></tbody></table></div>
   </div>
 </div>
 <script>
