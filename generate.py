@@ -994,7 +994,7 @@ if __name__ == "__main__":
     print(f"Dates: {data['dates'][0] if data['dates'] else 'none'} → {data['dates'][-1] if data['dates'] else 'none'}")
     print(f"Statuses found: {data['check_dist']['statuses']}")
     print(f"Check dates: {len(data['check_dist']['dates'])} days")
-    updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    updated = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M CST")
     html = generate_html(data, updated)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
