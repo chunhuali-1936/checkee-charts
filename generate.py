@@ -554,8 +554,8 @@ chartInstances['cWait'] = new Chart(document.getElementById('cWait'), {{
   }},
   options: {{
     responsive: true,
-    plugins: {{
     maintainAspectRatio: false,
+    plugins: {{
       legend: {{ display: false }},
       tooltip: {{
         mode: 'index',
