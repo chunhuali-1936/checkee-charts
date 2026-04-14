@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Scrapes checkee.info and generates index.html with daily visa case charts."""
 
-import requests
+from curl_cffi import requests
 from bs4 import BeautifulSoup
 from collections import defaultdict
 import json
@@ -24,7 +24,7 @@ def fetch_with_retry(url, retries=4, backoff=15):
     """GET with retries on 403/429/5xx."""
     for attempt in range(retries):
         try:
-            r = requests.get(url, headers=HEADERS, timeout=30)
+            r = requests.get(url, headers=HEADERS, timeout=30, impersonate="chrome124")
             if r.status_code in (403, 429, 503) and attempt < retries - 1:
                 wait = backoff * (attempt + 1)
                 print(f"  Got {r.status_code}, retrying in {wait}s (attempt {attempt+1}/{retries})...")
