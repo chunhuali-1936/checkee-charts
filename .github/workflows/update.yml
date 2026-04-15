@@ -24,6 +24,8 @@ jobs:
 
       - name: Generate charts
         run: python generate.py
+        env:
+          PROXY_BASE_URL: ${{ secrets.PROXY_BASE_URL }}
 
       - name: Commit and push
         run: |

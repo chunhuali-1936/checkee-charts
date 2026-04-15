@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Scrapes checkee.info and generates index.html with daily visa case charts."""
 
+import os
 import requests
 from bs4 import BeautifulSoup
 from collections import defaultdict
@@ -18,6 +19,13 @@ HEADERS = {
     "Upgrade-Insecure-Requests": "1",
     "Referer": "https://www.checkee.info/",
 }
+
+# If PROXY_BASE_URL is set (e.g. a Cloudflare Worker), route requests through it.
+# The worker proxies https://www.checkee.info, so replace that prefix.
+_PROXY = os.environ.get("PROXY_BASE_URL", "").rstrip("/")
+CHECKEE_BASE = _PROXY if _PROXY else "https://www.checkee.info"
+if _PROXY:
+    print(f"Using proxy: {_PROXY}")
 
 
 def fetch_with_retry(url, retries=6, backoff=15):
@@ -41,7 +49,7 @@ def fetch_with_retry(url, retries=6, backoff=15):
 
 def scrape():
     # Step 1: read the "Last 90 Days" dispdate directly from the site's own dropdown
-    base = fetch_with_retry("https://www.checkee.info/main.php?sortby=clear_date")
+    base = fetch_with_retry(f"{CHECKEE_BASE}/main.php?sortby=clear_date")
     base_soup = BeautifulSoup(base.text, "html.parser")
     dispdate = None
     for select in base_soup.find_all("select", {"name": "dispdate"}):
@@ -56,7 +64,7 @@ def scrape():
     print(f"Using dispdate: {dispdate}")
 
     # Step 2: fetch full 90-day dataset
-    url = f"https://www.checkee.info/main.php?sortby=clear_date&dispdate={dispdate}"
+    url = f"{CHECKEE_BASE}/main.php?sortby=clear_date&dispdate={dispdate}"
     r = fetch_with_retry(url)
 
     soup = BeautifulSoup(r.text, "html.parser")
@@ -94,7 +102,7 @@ def scrape():
 
 def scrape_monthly():
     """Scrape homepage monthly case table; return trailing 12 months."""
-    r = fetch_with_retry("https://www.checkee.info/")
+    r = fetch_with_retry(f"{CHECKEE_BASE}/")
     soup = BeautifulSoup(r.text, "html.parser")
     rows = []
     for tr in soup.find_all("tr"):
@@ -777,7 +785,7 @@ filterPill.addEventListener('click', () => {{
         {{ label: 'Clear',   data: monthly.months.map(function(_,i){{ return pct(monthly.clear,i);   }}), backgroundColor: '#8FC9A0', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
         {{ label: 'Reject',  data: monthly.months.map(function(_,i){{ return pct(monthly.reject,i);  }}), backgroundColor: '#E89E98', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
         {{ label: 'Pending', data: monthly.months.map(function(_,i){{ return pct(monthly.pending,i); }}), backgroundColor: '#BDD0E4', stack: 'stack', order: 2, pointStyle: 'rect', yAxisID: 'yPct' }},
-        {{ type: 'line', label: 'Total Cases', data: monthly.total, borderColor: '#1e293b', backgroundColor: 'transparent', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: false, order: 1, yAxisID: 'yTotal' }},
+        {{ type: 'line', label: 'Total Cases', data: monthly.total, borderColor: '#1e293b', backgroundColor: 'transparent', borderWidth: 1.5, pointRadius: 2, pointHoverRadius: 5, tension: 0.3, fill: false, order: 1, yAxisID: 'yTotal' }},
       ],
     }},
     options: {{
@@ -847,7 +855,8 @@ filterPill.addEventListener('click', () => {{
           borderColor: '#1e293b',
           backgroundColor: 'transparent',
           borderWidth: 1.5,
-          pointRadius: 0,
+          pointRadius: 2,
+          pointHoverRadius: 5,
           tension: 0.3,
           fill: false,
           spanGaps: true,
