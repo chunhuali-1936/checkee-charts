@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Scrapes checkee.info and generates index.html with daily visa case charts."""
 
-from curl_cffi import requests
+import requests
 from bs4 import BeautifulSoup
 from collections import defaultdict
 import json
-import os
 import re
 import statistics
 import time
@@ -20,15 +19,12 @@ HEADERS = {
     "Referer": "https://www.checkee.info/",
 }
 
-# Use Tor SOCKS5 proxy when running in CI
-PROXIES = {"http": "socks5h://127.0.0.1:9050", "https": "socks5h://127.0.0.1:9050"} if os.getenv("CI") else None
 
-
-def fetch_with_retry(url, retries=4, backoff=15):
+def fetch_with_retry(url, retries=8, backoff=30):
     """GET with retries on 403/429/5xx."""
     for attempt in range(retries):
         try:
-            r = requests.get(url, headers=HEADERS, timeout=60, impersonate="chrome124", proxies=PROXIES)
+            r = requests.get(url, headers=HEADERS, timeout=30)
             if r.status_code in (403, 429, 503) and attempt < retries - 1:
                 wait = backoff * (attempt + 1)
                 print(f"  Got {r.status_code}, retrying in {wait}s (attempt {attempt+1}/{retries})...")
@@ -66,9 +62,6 @@ def scrape():
     r = fetch_with_retry(url)
 
     soup = BeautifulSoup(r.text, "html.parser")
-    if os.getenv("CI"):
-        print(f"DEBUG response status: {r.status_code}, length: {len(r.text)}")
-        print(f"DEBUG first 500 chars: {r.text[:500]!r}")
     records = []
     for row in soup.find_all("tr"):
         cells = row.find_all("td")

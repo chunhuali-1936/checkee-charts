@@ -18,19 +18,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Start Tor
-        run: |
-          sudo apt-get install -y tor -q
-          sudo service tor start
-          echo "Waiting for Tor to fully bootstrap..."
-          timeout 120 bash -c 'until curl -sf --max-time 10 --socks5-hostname 127.0.0.1:9050 "https://check.torproject.org/api/ip" > /dev/null; do sleep 5; echo "Still bootstrapping..."; done'
-          echo "Tor ready"
-
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Generate charts
-        run: torify python3 generate.py
+        run: python generate.py
 
       - name: Commit and push
         run: |
