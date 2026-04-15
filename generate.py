@@ -20,23 +20,21 @@ HEADERS = {
 }
 
 
-def fetch_with_retry(url, retries=8, backoff=30):
-    """GET with retries on 403/429/5xx."""
+def fetch_with_retry(url, retries=6, backoff=15):
+    """GET with retries on 403/429/5xx. Flat backoff - checkee.info is intermittent, not rate-limiting us."""
     for attempt in range(retries):
         try:
-            r = requests.get(url, headers=HEADERS, timeout=30)
+            r = requests.get(url, headers=HEADERS, timeout=20)
             if r.status_code in (403, 429, 503) and attempt < retries - 1:
-                wait = backoff * (attempt + 1)
-                print(f"  Got {r.status_code}, retrying in {wait}s (attempt {attempt+1}/{retries})...")
-                time.sleep(wait)
+                print(f"  Got {r.status_code}, retrying in {backoff}s (attempt {attempt+1}/{retries})...")
+                time.sleep(backoff)
                 continue
             r.raise_for_status()
             return r
         except requests.exceptions.RequestException as e:
             if attempt < retries - 1:
-                wait = backoff * (attempt + 1)
-                print(f"  Request error: {e}, retrying in {wait}s...")
-                time.sleep(wait)
+                print(f"  Request error: {e}, retrying in {backoff}s...")
+                time.sleep(backoff)
             else:
                 raise
 
