@@ -195,12 +195,11 @@ def build_data(records, monthly):
             for s in all_statuses
         }
     }
-    complete_dates = sorted(complete_status_counts.keys())
     complete_dist = {
-        "dates": complete_dates,
+        "dates": dates,
         "statuses": all_statuses,
         "counts": {
-            s: {d: complete_status_counts[d].get(s, 0) for d in complete_dates}
+            s: {d: complete_status_counts[d].get(s, 0) for d in dates}
             for s in all_statuses
         }
     }
@@ -424,12 +423,11 @@ function buildAgg(records) {{
       s, Object.fromEntries(checkDates.map(cd => [cd, (cscMap[cd] || {{}})[s] || 0]))
     ])),
   }};
-  const compDates = Object.keys(compMap).sort();
   const complete_dist = {{
-    dates:    compDates,
+    dates:    dates,
     statuses: allStatuses,
     counts:   Object.fromEntries(allStatuses.map(s => [
-      s, Object.fromEntries(compDates.map(d => [d, (compMap[d] || {{}})[s] || 0]))
+      s, Object.fromEntries(dates.map(d => [d, (compMap[d] || {{}})[s] || 0]))
     ])),
   }};
 
