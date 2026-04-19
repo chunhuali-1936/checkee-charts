@@ -307,7 +307,10 @@ def generate_html(data, updated):
 <h1>Daily Completed Cases by Visa Category (Last 90 Days)</h1>
 <p class="updated">Last updated: {updated} &nbsp;·&nbsp; Source: <a href="https://www.checkee.info" target="_blank">checkee.info</a></p>
 <p class="summary-stats">{summary_html}</p>
-<div id="filterPill" class="filter-pill"></div>
+<div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+  <div id="filterPill" class="filter-pill"></div>
+  <div id="entryPill"  class="filter-pill"></div>
+</div>
 <div class="grid" id="grid"></div>
 <div class="monthly-wrap" id="monthlyWrap"></div>
 <div class="monthly-wrap" id="waitWrap"></div>
@@ -338,8 +341,17 @@ const palette = ['#54A06B','#D4635A','#9DB0C8','#A07840','#A86878','#4E6A7A','#7
 
 const grid = document.getElementById('grid');
 const filterPill = document.getElementById('filterPill');
+const entryPill  = document.getElementById('entryPill');
 const chartInstances = {{}};
 let activeConsulate = null;
+let activeEntryType = null;
+
+function getFilteredRecords() {{
+  return DATA.raw_records.filter(r =>
+    (!activeConsulate || r[5] === activeConsulate) &&
+    (!activeEntryType  || r[6] === activeEntryType)
+  );
+}}
 
 // ── Median helper ─────────────────────────────────────────────────────────────
 function jsMedian(arr) {{
@@ -583,6 +595,25 @@ grid.appendChild(waitCard);
     options: {{
       responsive: true,
       maintainAspectRatio: false,
+      onClick: (evt, elements) => {{
+        if (!elements.length) return;
+        const et = types[elements[0].index];
+        if (activeEntryType === et) {{
+          activeEntryType = null;
+          entryPill.style.display = 'none';
+          entryPill.classList.remove('active');
+          chartInstances['cWait'].data.datasets[0].backgroundColor = ['#4E79A7CC', '#F28E2BCC'];
+        }} else {{
+          activeEntryType = et;
+          entryPill.textContent = '✕  ' + et;
+          entryPill.style.display = 'block';
+          entryPill.classList.add('active');
+          chartInstances['cWait'].data.datasets[0].backgroundColor =
+            types.map((t, i) => t === et ? (['#4E79A7CC','#F28E2BCC'])[i] : (['#4E79A733','#F28E2B33'])[i]);
+        }}
+        chartInstances['cWait'].update();
+        updateAllCharts(getFilteredRecords());
+      }},
       plugins: {{
         legend: {{ position: 'top', labels: {{ font: {{ size: 11 }}, padding: 6 }} }},
         tooltip: {{
@@ -719,7 +750,6 @@ chartInstances['cEntry'] = new Chart(document.getElementById('cEntry'), {{
         filterPill.classList.remove('active');
         chartInstances['cEntry'].data.datasets[0].backgroundColor = consColors.map(c => c + 'CC');
         chartInstances['cEntry'].update();
-        updateAllCharts(DATA.raw_records);
       }} else {{
         activeConsulate = consulate;
         filterPill.textContent = '✕  ' + consulate;
@@ -728,8 +758,8 @@ chartInstances['cEntry'] = new Chart(document.getElementById('cEntry'), {{
         chartInstances['cEntry'].data.datasets[0].backgroundColor =
           consLabels.map((l, i) => l === consulate ? consColors[i] : consColors[i] + '33');
         chartInstances['cEntry'].update();
-        updateAllCharts(DATA.raw_records.filter(r => r[5] === consulate));
       }}
+      updateAllCharts(getFilteredRecords());
     }},
     plugins: {{
       legend: {{ display: false }},
@@ -757,7 +787,7 @@ chartInstances['cEntry'] = new Chart(document.getElementById('cEntry'), {{
   }}
 }});
 
-// Clicking the pill also resets the filter
+// Clicking the consulate pill resets that filter
 filterPill.addEventListener('click', () => {{
   if (!activeConsulate) return;
   activeConsulate = null;
@@ -765,7 +795,18 @@ filterPill.addEventListener('click', () => {{
   filterPill.classList.remove('active');
   chartInstances['cEntry'].data.datasets[0].backgroundColor = consColors.map(c => c + 'CC');
   chartInstances['cEntry'].update();
-  updateAllCharts(DATA.raw_records);
+  updateAllCharts(getFilteredRecords());
+}});
+
+// Clicking the entry pill resets that filter
+entryPill.addEventListener('click', () => {{
+  if (!activeEntryType) return;
+  activeEntryType = null;
+  entryPill.style.display = 'none';
+  entryPill.classList.remove('active');
+  chartInstances['cWait'].data.datasets[0].backgroundColor = ['#4E79A7CC', '#F28E2BCC'];
+  chartInstances['cWait'].update();
+  updateAllCharts(getFilteredRecords());
 }});
 
 // ── Monthly overview chart ────────────────────────────────────────────────────
