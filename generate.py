@@ -11,20 +11,46 @@ import time
 from datetime import datetime, timezone, timedelta
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
-    "Referer": "https://www.checkee.info/",
+    "Sec-Ch-Ua": '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": '"Windows"',
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Sec-Fetch-User": "?1",
+    "Cache-Control": "max-age=0",
+    "DNT": "1",
 }
+
+_session = None
+
+
+def get_session():
+    global _session
+    if _session is None:
+        _session = requests.Session()
+        _session.headers.update(HEADERS)
+        # Warm up: visit homepage to establish cookies
+        try:
+            _session.get("https://www.checkee.info/", timeout=20)
+            time.sleep(2)
+        except Exception:
+            pass
+    return _session
 
 
 def fetch_with_retry(url, retries=6, backoff=15):
-    """GET with retries on 403/429/5xx. Flat backoff - checkee.info is intermittent, not rate-limiting us."""
+    """GET with retries on 403/429/5xx using a persistent session for cookie handling."""
+    session = get_session()
     for attempt in range(retries):
         try:
-            r = requests.get(url, headers=HEADERS, timeout=20)
+            r = session.get(url, timeout=20)
             if r.status_code in (403, 429, 503) and attempt < retries - 1:
                 print(f"  Got {r.status_code}, retrying in {backoff}s (attempt {attempt+1}/{retries})...")
                 time.sleep(backoff)
@@ -39,27 +65,8 @@ def fetch_with_retry(url, retries=6, backoff=15):
                 raise
 
 
-def scrape():
-    # Step 1: read the "Last 90 Days" dispdate directly from the site's own dropdown
-    base = fetch_with_retry("https://www.checkee.info/main.php?sortby=clear_date")
-    base_soup = BeautifulSoup(base.text, "html.parser")
-    dispdate = None
-    for select in base_soup.find_all("select", {"name": "dispdate"}):
-        for opt in select.find_all("option"):
-            if "90 Days" in opt.get_text():
-                dispdate = opt.get("value")
-                break
-        if dispdate:
-            break
-    if not dispdate:
-        dispdate = (datetime.now(timezone.utc) - timedelta(days=90)).strftime("%Y-%m-%d")
-    print(f"Using dispdate: {dispdate}")
-
-    # Step 2: fetch full 90-day dataset
-    url = f"https://www.checkee.info/main.php?sortby=clear_date&dispdate={dispdate}"
-    r = fetch_with_retry(url)
-
-    soup = BeautifulSoup(r.text, "html.parser")
+def parse_rows(soup):
+    """Extract records from a BeautifulSoup page containing the checkee table."""
     records = []
     for row in soup.find_all("tr"):
         cells = row.find_all("td")
@@ -90,6 +97,68 @@ def scrape():
                     "details": details,
                 })
     return records
+
+
+def load_cached_records(html_path="index.html"):
+    """Extract raw_records from the existing index.html DATA blob."""
+    try:
+        with open(html_path, encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        return []
+    m = re.search(r'const DATA\s*=\s*(\{.*?\});\s*\n', content, re.DOTALL)
+    if not m:
+        return []
+    try:
+        data = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return []
+    raw = data.get("raw_records", [])
+    # raw_records format: [date, visa, days, status, check_date, consulate, entry, major, details]
+    records = []
+    for r in raw:
+        if len(r) >= 9:
+            records.append({
+                "date": r[0], "visa": r[1], "days": r[2], "status": r[3],
+                "check_date": r[4], "consulate": r[5], "entry": r[6],
+                "major": r[7], "details": r[8],
+            })
+    return records
+
+
+def scrape():
+    """Scrape the base page (no dispdate param — bypasses Cloudflare) and merge with cached 90-day history."""
+    # Cloudflare blocks all ?dispdate=... URLs. The base URL without dispdate always works.
+    # Strategy: scrape fresh rows from the base page, merge with records cached in index.html,
+    # then prune to last 90 days.
+    base = fetch_with_retry("https://www.checkee.info/main.php?sortby=clear_date")
+    base_soup = BeautifulSoup(base.text, "html.parser")
+    fresh_records = parse_rows(base_soup)
+    print(f"Fresh rows from base page: {len(fresh_records)}")
+
+    cached_records = load_cached_records()
+    print(f"Cached records from index.html: {len(cached_records)}")
+
+    # Merge: use a set of (date, visa, days, check_date) as dedup key
+    def rec_key(r):
+        return (r["date"], r["visa"], r["days"], r["check_date"])
+
+    seen = set()
+    merged = []
+    for r in fresh_records + cached_records:
+        k = rec_key(r)
+        if k not in seen:
+            seen.add(k)
+            merged.append(r)
+
+    # Prune to last 90 days
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=90)).strftime("%Y-%m-%d")
+    merged = [r for r in merged if r["date"] >= cutoff]
+    print(f"Merged records after 90-day prune: {len(merged)}")
+
+    if not merged:
+        raise RuntimeError("No records after merge — nothing to render.")
+    return merged
 
 
 def scrape_monthly():
