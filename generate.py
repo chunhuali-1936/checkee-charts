@@ -10,6 +10,8 @@ import statistics
 import time
 from datetime import datetime, timezone, timedelta
 
+CHROME_PROFILE_COPY = "/tmp/chrome-profile-copy"
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -126,20 +128,110 @@ def load_cached_records(html_path="index.html"):
     return records
 
 
+def scrape_with_selenium():
+    """Use a non-headless Chrome session (with copied profile) to submit the 90-day form on checkee.info.
+    Bypasses Cloudflare because a real Chrome profile with valid cookies is used."""
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import Select as SeleniumSelect
+    import shutil, os
+
+    # Copy Chrome profile so we get existing CF cookies without touching the live profile.
+    # Skip if a recent copy already exists (avoids re-copying on every run).
+    src = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default")
+    dst = CHROME_PROFILE_COPY
+    profile_age = float('inf')
+    if os.path.exists(dst):
+        profile_age = time.time() - os.path.getmtime(dst)
+
+    if profile_age > 3600:  # Re-copy if older than 1 hour
+        if os.path.exists(dst):
+            try:
+                shutil.rmtree(dst)
+            except Exception:
+                pass  # Use existing copy if rmtree fails
+        if not os.path.exists(dst):
+            shutil.copytree(src, dst,
+                ignore=shutil.ignore_patterns(
+                    'SingletonLock', 'SingletonCookie', 'SingletonSocket',
+                    'GPUCache', 'ShaderCache', 'Code Cache', 'Cache',
+                ))
+        print(f"Chrome profile copied to {dst}")
+    else:
+        print(f"Using existing profile copy (age {profile_age:.0f}s)")
+
+    opts = Options()
+    opts.add_argument(f"--user-data-dir={dst}")
+    opts.add_argument("--profile-directory=.")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--disable-blink-features=AutomationControlled")
+    opts.add_experimental_option("excludeSwitches", ["enable-automation"])
+    opts.add_experimental_option("useAutomationExtension", False)
+    # Non-headless so Cloudflare doesn't detect automation
+    # (window appears briefly then closes)
+
+    driver = webdriver.Chrome(options=opts)
+    try:
+        driver.get("https://www.checkee.info/main.php?sortby=clear_date")
+        time.sleep(5)
+
+        # Select the second dispdate dropdown (Last 7/30/90 Days)
+        selects = driver.find_elements(By.NAME, "dispdate")
+        if len(selects) < 2:
+            raise RuntimeError(f"Expected 2 dispdate selects, got {len(selects)}")
+
+        sel90 = SeleniumSelect(selects[1])
+        target_val = None
+        for opt in sel90.options:
+            if "90" in opt.text:
+                target_val = opt.get_attribute("value")
+                sel90.select_by_value(target_val)
+                break
+        if not target_val:
+            raise RuntimeError("Could not find '90 Days' option in dropdown")
+        print(f"Selected: Last 90 Days = {target_val}")
+
+        # Submit the form containing the second select
+        forms = driver.find_elements(By.XPATH, "//form[@action='./disppage.php']")
+        if len(forms) >= 2:
+            forms[1].submit()
+        else:
+            selects[1].find_element(By.XPATH, "./ancestor::form").submit()
+
+        time.sleep(8)
+        print(f"Landed on: {driver.current_url}")
+
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        records = parse_rows(soup)
+        return records
+    finally:
+        driver.quit()
+
+
 def scrape():
-    """Scrape the base page (no dispdate param — bypasses Cloudflare) and merge with cached 90-day history."""
-    # Cloudflare blocks all ?dispdate=... URLs. The base URL without dispdate always works.
-    # Strategy: scrape fresh rows from the base page, merge with records cached in index.html,
-    # then prune to last 90 days.
+    """Fetch the full 90-day dataset from checkee.info.
+    Uses Selenium with a copied Chrome profile to bypass Cloudflare JS challenge.
+    Falls back to incremental merge with cached index.html if Selenium fails."""
+    try:
+        records = scrape_with_selenium()
+        print(f"Selenium scrape: {len(records)} records")
+        if records:
+            return records
+        print("WARNING: Selenium returned 0 records, falling back to incremental mode")
+    except Exception as e:
+        print(f"WARNING: Selenium scrape failed ({e}), falling back to incremental mode")
+
+    # Fallback: scrape base page + merge with cached data
     base = fetch_with_retry("https://www.checkee.info/main.php?sortby=clear_date")
     base_soup = BeautifulSoup(base.text, "html.parser")
     fresh_records = parse_rows(base_soup)
-    print(f"Fresh rows from base page: {len(fresh_records)}")
+    print(f"Fallback — fresh rows from base page: {len(fresh_records)}")
 
     cached_records = load_cached_records()
     print(f"Cached records from index.html: {len(cached_records)}")
 
-    # Merge: use a set of (date, visa, days, check_date) as dedup key
     def rec_key(r):
         return (r["date"], r["visa"], r["days"], r["check_date"])
 
@@ -151,7 +243,6 @@ def scrape():
             seen.add(k)
             merged.append(r)
 
-    # Prune to last 90 days
     cutoff = (datetime.now(timezone.utc) - timedelta(days=90)).strftime("%Y-%m-%d")
     merged = [r for r in merged if r["date"] >= cutoff]
     print(f"Merged records after 90-day prune: {len(merged)}")
