@@ -238,6 +238,9 @@ def scrape():
     cached_records = load_cached_records()
     print(f"Cached records from index.html: {len(cached_records)}")
 
+    if not fresh_records:
+        raise RuntimeError("Fallback returned 0 fresh rows; keeping existing index.html.")
+
     def rec_key(r):
         return (r["date"], r["visa"], r["days"], r["check_date"])
 
@@ -252,6 +255,11 @@ def scrape():
     cutoff = (datetime.now(timezone.utc) - timedelta(days=90)).strftime("%Y-%m-%d")
     merged = [r for r in merged if r["date"] >= cutoff]
     print(f"Merged records after 90-day prune: {len(merged)}")
+
+    if cached_records and len(merged) < len(cached_records) * 0.95:
+        raise RuntimeError(
+            f"Fallback would shrink cached records from {len(cached_records)} to {len(merged)}; keeping existing index.html."
+        )
 
     if not merged:
         raise RuntimeError("No records after merge — nothing to render.")
