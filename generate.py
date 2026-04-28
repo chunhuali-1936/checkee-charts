@@ -130,7 +130,7 @@ def load_cached_records(html_path="index.html"):
     return records
 
 
-def build_chrome_options():
+def build_chrome_options(force_refresh=False):
     """Create Chrome options backed by a copied local profile."""
     from selenium.webdriver.chrome.options import Options
 
@@ -142,7 +142,7 @@ def build_chrome_options():
     if os.path.exists(dst):
         profile_age = time.time() - os.path.getmtime(dst)
 
-    if profile_age > 3600:  # Re-copy if older than 1 hour
+    if force_refresh or profile_age > 3600:  # Re-copy if stale or a retry needs a clean profile.
         if os.path.exists(dst):
             try:
                 shutil.rmtree(dst)
@@ -171,14 +171,14 @@ def build_chrome_options():
     return opts
 
 
-def scrape_with_selenium():
+def scrape_with_selenium(force_refresh_profile=False):
     """Use a non-headless Chrome session (with copied profile) to submit the 90-day form on checkee.info.
     Bypasses Cloudflare because a real Chrome profile with valid cookies is used."""
     from selenium import webdriver
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import Select as SeleniumSelect
 
-    driver = webdriver.Chrome(options=build_chrome_options())
+    driver = webdriver.Chrome(options=build_chrome_options(force_refresh=force_refresh_profile))
     try:
         driver.get("https://www.checkee.info/main.php?sortby=clear_date")
         time.sleep(5)
@@ -220,14 +220,20 @@ def scrape():
     """Fetch the full 90-day dataset from checkee.info.
     Uses Selenium with a copied Chrome profile to bypass Cloudflare JS challenge.
     Falls back to incremental merge with cached index.html if Selenium fails."""
-    try:
-        records = scrape_with_selenium()
-        print(f"Selenium scrape: {len(records)} records")
-        if records:
-            return records
-        print("WARNING: Selenium returned 0 records, falling back to incremental mode")
-    except Exception as e:
-        print(f"WARNING: Selenium scrape failed ({e}), falling back to incremental mode")
+    for attempt in range(1, 4):
+        try:
+            records = scrape_with_selenium(force_refresh_profile=attempt > 1)
+            print(f"Selenium scrape attempt {attempt}: {len(records)} records")
+            if records:
+                return records
+            print("WARNING: Selenium returned 0 records")
+        except Exception as e:
+            print(f"WARNING: Selenium scrape attempt {attempt} failed ({e})")
+
+        if attempt < 3:
+            time.sleep(15)
+
+    print("WARNING: Selenium failed after 3 attempts, falling back to incremental mode")
 
     # Fallback: scrape base page + merge with cached data
     base = fetch_with_retry("https://www.checkee.info/main.php?sortby=clear_date")
